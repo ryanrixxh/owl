@@ -4,45 +4,44 @@ use color_eyre::Result;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{
     DefaultTerminal, Frame,
+    layout::{Constraint, Direction, Layout},
     style::Stylize,
     text::Line,
-    widgets::{Block, Borders, List, Paragraph},
+    widgets::{Block, List},
 };
 use tokio::spawn;
 
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
-    let table_handle = spawn(aws::list_tables());
-    let stack_handle = spawn(aws::get_stack());
+    let stack_handle = spawn(aws::get_stacks());
 
-    println!("Running table getter in a background thread...");
-    let tables = table_handle.await.unwrap().unwrap(); // TODO Get rid of these gross ass unwraps!
-    let _ = stack_handle.await;
-    println!("{:?}", tables);
+    let stacks = stack_handle.await.unwrap().unwrap();
+    let stack_names: Vec<&str> = stacks
+        .iter()
+        .map(|stack| stack.stack_name().unwrap())
+        .collect();
 
-    Ok(())
-
-    // color_eyre::install()?;
-    // let terminal = ratatui::init();
-    // let result = App::new(&tables).run(terminal);
-    // ratatui::restore();
-    // result
+    color_eyre::install()?;
+    let terminal = ratatui::init();
+    let result = App::new(&stack_names).run(terminal);
+    ratatui::restore();
+    result
 }
 
 /// The main application which holds the state and logic of the application.
 #[derive(Debug, Default)]
-pub struct App {
+pub struct App<'a> {
     /// Is the application running?
     running: bool,
-    tables: Vec<String>,
+    stacks: Vec<&'a str>,
 }
 
-impl App {
+impl<'a> App<'a> {
     /// Construct a new instance of [`App`].
-    pub fn new(tables: &Vec<String>) -> Self {
+    pub fn new(stacks: &Vec<&'a str>) -> Self {
         Self {
             running: false,
-            tables: tables.clone(), // TODO: I dont think this needs to be cloned but dont know
+            stacks: stacks.clone(), // TODO: I dont think this needs to be cloned but dont know
                                     // enough about lifetimes to fix it.
         }
     }
@@ -58,18 +57,29 @@ impl App {
     }
 
     /// Renders the user interface.
-    ///
-    /// This is where you add new widgets. See the following resources for more information:
-    ///
-    /// - <https://docs.rs/ratatui/latest/ratatui/widgets/index.html>
-    /// - <https://github.com/ratatui/ratatui/tree/main/ratatui-widgets/examples>
     fn render(&mut self, frame: &mut Frame) {
+        // Define a layout for the UI and its elements
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Percentage(10), Constraint::Percentage(90)])
+            .split(frame.area());
+
         let title = Line::from("Owl").bold().blue().centered();
-        let text = "A integration stack visualiser and configuration UI.\n\n\
+        let text = "An integration stack visualiser and configuration UI. \n\n\
             Press `Esc`, `Ctrl-C` or `q` to stop running.";
+
+        let title_block = Block::new().title(title);
+        let tagline = Line::from(text).centered();
+
+        frame.render_widget(&title_block, layout[0]);
+        frame.render_widget(tagline, title_block.inner(layout[0]));
+
+        // Stack Menu
         frame.render_widget(
-            List::new(self.tables.clone()).block(Block::bordered().title("DynamoDB Tables")),
-            frame.area(),
+            List::new(self.stacks.clone()).block(
+                Block::bordered().title(Line::from("CloudFormation Stacks").centered().bold()),
+            ),
+            layout[1],
         );
     }
 
