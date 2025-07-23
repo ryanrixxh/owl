@@ -16,7 +16,7 @@ async fn create_config() -> Result<SdkConfig, Box<dyn Error>> {
     return Ok(config);
 }
 
-pub async fn list_tables() -> Result<Vec<String>, dynamodb::Error> {
+pub async fn _list_tables() -> Result<Vec<String>, dynamodb::Error> {
     println!("Running list tables function...");
 
     let config = create_config().await.unwrap();
@@ -26,6 +26,7 @@ pub async fn list_tables() -> Result<Vec<String>, dynamodb::Error> {
     Ok(resp.table_names().to_vec())
 }
 
+/// Gets the stack summaries for all stacks on the given profile
 pub async fn get_stacks() -> Result<Vec<StackSummary>, cloudformation::Error> {
     let config = create_config().await.unwrap();
     let client = cloudformation::Client::new(&config);
