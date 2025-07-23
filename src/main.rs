@@ -28,11 +28,11 @@ async fn main() -> color_eyre::Result<()> {
 /// The main application which holds the state and logic of the application.
 #[derive(Debug)]
 pub struct App<'a> {
-    /// Is the application running?
     running: bool,
     stack_list: StackList<'a>,
 }
 
+/// List of cloudformation stacks in the users default environment
 #[derive(Debug, Clone)]
 struct StackList<'a> {
     stacks: &'a Vec<StackSummary>,
@@ -100,10 +100,7 @@ impl<'a> App<'a> {
         );
     }
 
-    /// Reads the crossterm events and updates the state of [`App`].
-    ///
-    /// If your application needs to perform work in between handling events, you can use the
-    /// [`event::poll`] function to check if there are any events available with a timeout.
+    /// Event handling using the crossterm backend. This handles all user input.
     fn handle_crossterm_events(&mut self) -> Result<()> {
         match event::read()? {
             // it's important to check KeyEventKind::Press to avoid handling key release events
@@ -128,6 +125,7 @@ impl<'a> App<'a> {
         }
     }
 
+    /// Open a link to the selected stack in AWS Console
     fn go_to_stack_link(&mut self) {
         let index = self
             .stack_list

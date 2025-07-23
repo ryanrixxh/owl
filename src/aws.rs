@@ -6,7 +6,10 @@ use aws_sdk_cloudformation::types::StackSummary;
 use aws_sdk_dynamodb as dynamodb;
 use std::error::Error;
 
-// Get the AWS config to grab stack details from
+/// Get the AWS config to grab stack details from default default_provider
+// TODO: We need to give the user the ability to run this and pass in a specific profile similar to
+// serverless. Or better yet, we read all the profiles in the local machine and have the ability to
+// navigate everything.
 async fn create_config() -> Result<SdkConfig, Box<dyn Error>> {
     let region_provider = RegionProviderChain::default_provider().or_else("ap-southeast-2");
     let config = aws_config::defaults(BehaviorVersion::latest())
