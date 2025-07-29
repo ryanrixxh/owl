@@ -12,12 +12,17 @@ use ratatui::{
     text::Line,
     widgets::{Block, List, ListState, Widget},
 };
-use tokio::spawn;
+use std::sync::Arc;
+use tokio::runtime::Builder;
 
-#[tokio::main]
-async fn main() -> color_eyre::Result<()> {
-    let stack_handle = spawn(aws::get_stacks());
-    let stacks = stack_handle.await.unwrap().unwrap();
+fn main() -> color_eyre::Result<()> {
+    let runtime = Builder::new_multi_thread()
+        .worker_threads(1)
+        .enable_all()
+        .build()
+        .unwrap();
+    let stack_handle = runtime.spawn(aws::get_stacks());
+    let stacks = runtime.block_on(stack_handle).unwrap().unwrap();
 
     color_eyre::install()?;
 
@@ -98,7 +103,7 @@ impl<'a> App<'a> {
         frame.render_widget(tagline, title_block.inner(layout[0]));
 
         if self.view == View::Resources {
-            let stack_view = Stack::new(self.current_stack.unwrap()).await?;
+            let stack_view = Stack::new(Arc::new(self.current_stack.unwrap().clone()));
             stack_view.render(layout[1], frame.buffer_mut());
             return;
         }
