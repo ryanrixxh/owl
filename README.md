@@ -3,7 +3,6 @@
 An AWS stack visualiser and configuration helper. Made using [Ratatui].
 
 [Ratatui]: https://ratatui.rs
-[Simple Template]: https://github.com/ratatui/templates/tree/main/simple
 
 # TODOS / Features
 - List a given stack in the current CDK deployment 
@@ -11,7 +10,7 @@ An AWS stack visualiser and configuration helper. Made using [Ratatui].
     - Additional: List all environments and compare differences? I dont think this is possible because the SDK will use different profiles. Maybe if we are able to read the credentials file and then grab stacks for all of the profiles we could do it?
 - List and update SSM configurations in AWS for a given environment
 - Change a given integration from maintenance mode to production mode
-- CHange
+- Ability to live tail a lambda directly from terminal (maybe even starts live tailing the correct log group as soon as you are viewing a lambda?)
 
 
 ## License
