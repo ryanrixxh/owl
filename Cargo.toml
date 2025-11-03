@@ -13,5 +13,5 @@ color-eyre = "0.6.3"
 aws-config = "1.8.2"
 aws-sdk-dynamodb = "1.84.0"
 tokio = { version = "1.46.1", features = ["full"] }
-aws-sdk-cloudformation = "1.85.0"
+aws-sdk-cloudformation = "1.86.0"
 open = "5.3.2"
